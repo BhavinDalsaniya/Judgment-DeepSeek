@@ -86,6 +86,7 @@ button:hover {
 }
 
 #hand {
+  background: rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -153,7 +154,7 @@ button:hover {
 }
 
 .card-face-inline .suit {
-  font-size: 24px;
+  font-size: 36px;
 }
 
 .game-panels {

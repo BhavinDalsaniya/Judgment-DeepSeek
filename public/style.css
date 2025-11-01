@@ -1,0 +1,174 @@
+body {
+  background: #023047;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+}
+
+input, button, select {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+button {
+  cursor: pointer;
+  background: #ffb703;
+  font-weight: bold;
+  min-width: 120px;
+}
+
+button:hover {
+  background: #fb8500;
+}
+
+.setup-grid {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.game-options {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.game-options label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.game-options select {
+  width: 100%;
+  background: white;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.game-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.player-list {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+#gameConfig {
+  text-align: left;
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+#hand {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.card {
+  border: 2px solid #fff;
+  border-radius: 8px;
+  padding: 15px;
+  background: #219ebc;
+  margin: 5px;
+  width: 60px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  background: #8ecae6;
+  border-color: #ffb703;
+}
+
+.played-card {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  border-left: 4px solid #ffb703;
+}
+
+.game-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.panel h3 {
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 5px;
+}
+
+.messages {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.messages div {
+  margin: 5px 0;
+  padding: 5px;
+  border-left: 3px solid #ffb703;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#players {
+  list-style: none;
+  padding: 0;
+}
+
+#players li {
+  padding: 8px;
+  margin: 5px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}

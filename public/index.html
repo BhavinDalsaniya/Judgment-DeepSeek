@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judgment Card Game</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🃏 Judgment Game</h1>
+
+    <div id="setup">
+      <div class="setup-grid">
+        <input id="playerName" placeholder="Enter your name" />
+        <input id="roomCode" placeholder="Room Code" />
+        
+        <div class="game-options">
+          <label for="deckCount">Number of Decks:</label>
+          <select id="deckCount">
+            <option value="1">1 Deck</option>
+            <option value="2">2 Decks</option>
+            <option value="3">3 Decks</option>
+          </select>
+        </div>
+        
+        <div class="game-options">
+          <label for="maxRoundCards">Max Cards per Round:</label>
+          <select id="maxRoundCards">
+            <option value="5">5 Cards</option>
+            <option value="7">7 Cards</option>
+            <option value="10">10 Cards</option>
+            <option value="13">13 Cards</option>
+          </select>
+        </div>
+      </div>
+      <div class="button-group">
+        <button id="createRoomBtn">Create Room</button>
+        <button id="joinRoomBtn">Join Room</button>
+      </div>
+    </div>
+
+    <div id="lobby" class="hidden">
+      <div class="game-info">
+        <h3>Game Configuration:</h3>
+        <div id="gameConfig"></div>
+      </div>
+      <div class="player-list">
+        <h3>Players:</h3>
+        <ul id="players"></ul>
+      </div>
+      <button id="startGameBtn" class="hidden">Start Game</button>
+    </div>
+
+    <div id="game" class="hidden">
+      <h2 id="roundInfo"></h2>
+      
+      <div class="game-panels">
+        <div class="panel">
+          <h3>Predictions</h3>
+          <div id="predictions"></div>
+        </div>
+        
+        <div class="panel">
+          <h3>Current Trick</h3>
+          <div id="currentTrick"></div>
+        </div>
+        
+        <div class="panel">
+          <h3>Tricks Won</h3>
+          <div id="tricksWon"></div>
+        </div>
+      </div>
+      
+      <div id="gameMessages" class="messages"></div>
+      
+      <h3>Your Hand</h3>
+      <div id="hand"></div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

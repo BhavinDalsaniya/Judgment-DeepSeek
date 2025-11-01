@@ -22,6 +22,7 @@ let playersInRoom = [];
 let previousTotals = {};
 let currentTurnPlayerName = null;
 let currentPlayOrder = [];
+let latestPredictions = null;
 
 function renderScoreHeader() {
   const header = document.getElementById("scoreHeader");
@@ -56,6 +57,9 @@ function updateScoreTotals(currentTotals) {
 
 function refreshTurnHighlight() {
   updateScoreTotals(previousTotals || {});
+  if (latestPredictions) {
+    renderPredictions(latestPredictions);
+  }
 }
 
 function appendRoundRow(round, currentTotals) {
@@ -324,6 +328,18 @@ function showPredictionInput(maxPrediction, isLast = false, forbidden = null) {
   prompt.classList.remove("hidden");
 }
 
+function renderPredictions(predictions) {
+  const predDiv = document.getElementById("predictions");
+  if (!predDiv) return;
+  let predictionsHTML = "";
+  Object.keys(predictions).forEach(player => {
+    const isCurrent = (player === currentTurnPlayerName);
+    const cls = isCurrent ? 'current-turn' : '';
+    predictionsHTML += `<p class="pred-line ${cls}" data-player="${player}">${player}: ${predictions[player]} tricks</p>`;
+  });
+  predDiv.innerHTML = predictionsHTML;
+}
+
 // Global function for prediction buttons
 window.submitPrediction = function(prediction) {
   const prompt = document.getElementById("predictionPrompt");
@@ -346,12 +362,8 @@ socket.on("allPredictionsMade", (predictions) => {
     prompt.classList.add("hidden");
     prompt.innerHTML = "";
   }
-  // let predictionsHTML = "<h3>All Predictions:</h3>";
-  let predictionsHTML = "";
-  Object.keys(predictions).forEach(player => {
-    predictionsHTML += `<p>${player}: ${predictions[player]} tricks</p>`;
-  });
-  document.getElementById("predictions").innerHTML = predictionsHTML;
+  latestPredictions = { ...predictions };
+  renderPredictions(latestPredictions);
   showGameMessage("All predictions are in! Starting play phase...");
 });
 

@@ -446,3 +446,12 @@ button:active {
   border-left-color: #ffb703;
   transform: translateX(5px);
 }
+
+/* Predictions: highlight current-turn name */
+#predictions .pred-line.current-turn {
+  border-left: 4px solid #ffb703;
+  background: rgba(255, 183, 3, 0.15);
+  padding-left: 8px;
+  font-weight: 700;
+  border-radius: 4px;
+}

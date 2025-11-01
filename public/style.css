@@ -87,6 +87,7 @@ button:hover {
 
 #hand {
   background: rgba(255, 255, 255, 0.1);
+
   display: flex;
   justify-content: center;
   flex-wrap: wrap;

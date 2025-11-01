@@ -34,7 +34,10 @@ function suitColor(suit) {
 function formatCardHTML(card) {
   const sym = suitSymbol(card.suit);
   const color = suitColor(card.suit);
-  return `${card.rank} <span style="color:${color}">${sym}</span>`;
+  return `<div class="card-face">
+            <div class="rank">${card.rank}</div>
+            <div class="suit" style="color:${color}">${sym}</div>
+          </div>`;
 }
 
 function formatCardText(card) {

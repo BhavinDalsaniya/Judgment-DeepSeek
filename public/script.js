@@ -356,10 +356,12 @@ socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
   });
   document.getElementById("tricksWon").innerHTML = tricksHTML;
   
-  // Clear current trick
-  document.getElementById("currentTrick").innerHTML = "";
-  // Reset lead suit indicator
-  renderRoundHeader();
+  // Keep the completed trick visible for 4 seconds before clearing
+  setTimeout(() => {
+    document.getElementById("currentTrick").innerHTML = "";
+    // Reset lead suit indicator
+    renderRoundHeader();
+  }, 4000);
 });
 
 socket.on("nextTrick", ({ firstPlayer, playOrder }) => {

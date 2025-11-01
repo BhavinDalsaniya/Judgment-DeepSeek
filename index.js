@@ -537,7 +537,8 @@ io.on("connection", (socket) => {
       // Check if round is over (all cards played)
       const totalTricksPlayed = Object.values(room.tricks_won).reduce((sum, t) => sum + t, 0);
       if (totalTricksPlayed === room.cards_this_round) {
-        setTimeout(() => endRound(roomCode), 2000);
+        // Wait 4s so everyone can see the completed trick before ending the round
+        setTimeout(() => endRound(roomCode), 4000);
       } else {
         // Next trick starts with the winner
         const winnerIndex = room.players.findIndex(p => p.id === winningPlay.playerId);
@@ -545,13 +546,14 @@ io.on("connection", (socket) => {
         room.current_play_order = playOrder.map(p => p.id);
         room.next_player_index = 0;
         
+        // Wait 4s so everyone can see the completed trick before starting next trick
         setTimeout(() => {
           io.to(roomCode).emit("nextTrick", {
             firstPlayer: playOrder[0].name,
             playOrder: playOrder.map(p => p.name)
           });
           io.to(playOrder[0].id).emit("yourTurnToPlay");
-        }, 1500);
+        }, 4000);
       }
     } else {
       // Notify next player to play using enforced order

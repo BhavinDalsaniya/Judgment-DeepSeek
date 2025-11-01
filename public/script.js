@@ -98,6 +98,12 @@ function formatCardText(card) {
   return `${card.rank} ${suitSymbol(card.suit)}`;
 }
 
+function formatCardHTMLInline(card) {
+  const sym = suitSymbol(card.suit);
+  const color = suitColor(card.suit);
+  return `<div class="card-face-inline"><span class="rank">${card.rank}</span><span class="suit" style="color:${color}">${sym}</span></div>`;
+}
+
 // Track current round header data to re-render with optional lead suit
 let currentRound = 0;
 let currentCardsThisRound = 0;
@@ -380,7 +386,7 @@ socket.on("cardPlayed", ({ playerName, card }) => {
   }
   const cardDiv = document.createElement("div");
   cardDiv.className = "played-card";
-  cardDiv.innerHTML = `${playerName}: ${formatCardHTML(card)}`;
+  cardDiv.innerHTML = `${playerName}: ${formatCardHTMLInline(card)}`;
   currentTrickDiv.appendChild(cardDiv);
 
   if (currentPlayOrder && currentPlayOrder.length > 0) {

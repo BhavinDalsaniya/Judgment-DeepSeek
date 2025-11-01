@@ -118,11 +118,11 @@ button:hover {
 }
 
 .card .rank {
-  font-size: 22px;
+  font-size: 44px;
 }
 
 .card .suit {
-  font-size: 28px;
+  font-size: 56px;
   margin-top: 4px;
 }
 
@@ -138,6 +138,22 @@ button:hover {
   margin: 5px;
   border-radius: 5px;
   border-left: 4px solid #ffb703;
+}
+
+/* Horizontal card face for current trick */
+.card-face-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-face-inline .rank {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.card-face-inline .suit {
+  font-size: 24px;
 }
 
 .game-panels {

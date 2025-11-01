@@ -154,35 +154,35 @@ socket.on("errorMessage", msg => {
 });
 
 // Prediction phase - FIXED: Show prediction input only when it's your turn AND after cards are visible
-socket.on("requestPrediction", ({ playerOrder, currentPlayer, maxPrediction }) => {
+socket.on("requestPrediction", ({ playerOrder, currentPlayer, maxPrediction, isLast, forbidden }) => {
   console.log("Prediction requested. Current player:", currentPlayer, "My name:", myName);
   isMyTurn = (currentPlayer === myName);
   
   if (isMyTurn) {
     // Small delay to ensure cards are visible
     setTimeout(() => {
-      showPredictionInput(maxPrediction);
+      showPredictionInput(maxPrediction, isLast, forbidden);
     }, 500);
   } else {
     showGameMessage(`Waiting for ${currentPlayer} to predict...`);
   }
 });
 
-socket.on("nextPlayerPredict", ({ currentPlayer }) => {
+socket.on("nextPlayerPredict", ({ currentPlayer, maxPrediction, isLast, forbidden }) => {
   console.log("Next player to predict:", currentPlayer);
   isMyTurn = (currentPlayer === myName);
   
   if (isMyTurn) {
     showGameMessage("It's your turn to predict!");
-    // Get maxPrediction from current round info
-    const maxPrediction = myCards.length;
-    showPredictionInput(maxPrediction);
+    // Prefer server-provided maxPrediction; fallback to hand size
+    const maxPred = typeof maxPrediction === 'number' ? maxPrediction : myCards.length;
+    showPredictionInput(maxPred, isLast, forbidden);
   } else {
     showGameMessage(`Waiting for ${currentPlayer} to predict...`);
   }
 });
 
-function showPredictionInput(maxPrediction) {
+function showPredictionInput(maxPrediction, isLast = false, forbidden = null) {
   showGameMessage(`It's your turn to predict! How many tricks will you win? (0-${maxPrediction})`);
   
   // Create prediction UI
@@ -190,11 +190,15 @@ function showPredictionInput(maxPrediction) {
   predictionDiv.id = "predictionInput";
   predictionDiv.innerHTML = `
     <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
-      <p>Make your prediction (0-${maxPrediction}):</p>
+      <p>Make your prediction (0-${maxPrediction})${isLast && forbidden !== null ? ` — Note: ${forbidden} is disabled for last player` : ''}:</p>
       <div id="predictionButtons" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
-        ${Array.from({length: maxPrediction + 1}, (_, i) => 
-          `<button onclick="submitPrediction(${i})" style="padding: 8px 12px;">${i}</button>`
-        ).join('')}
+        ${Array.from({length: maxPrediction + 1}, (_, i) => {
+          const isForbidden = isLast && forbidden === i;
+          const disabledAttr = isForbidden ? 'disabled' : '';
+          const title = isForbidden ? 'Not allowed for last player this round' : '';
+          const style = `padding: 8px 12px;${isForbidden ? ' opacity: 0.5; cursor: not-allowed; pointer-events: none;' : ''}`;
+          return `<button ${disabledAttr} title="${title}" onclick="submitPrediction(${i})" style="${style}">${i}</button>`;
+        }).join('')}
       </div>
     </div>
   `;
@@ -297,14 +301,8 @@ socket.on("gameOver", ({ finalScores }) => {
   });
   
   document.getElementById("gameMessages").innerHTML = finalHTML;
-  
-  // Show restart option
-  setTimeout(() => {
-    if (confirm("Game Over! Would you like to return to the lobby?")) {
-      gameDiv.classList.add("hidden");
-      lobby.classList.remove("hidden");
-    }
-  }, 2000);
+  // No popup; server will auto-start the next game. Optionally inform players.
+  showGameMessage("Starting next game shortly...");
 });
 
 socket.on("gameEnded", (reason) => {

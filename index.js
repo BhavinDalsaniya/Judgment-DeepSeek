@@ -223,8 +223,16 @@ io.on("connection", (socket) => {
       const nextPlayerId = room.predictionOrder[0];
       const nextPlayer = room.players.find(p => p.id === nextPlayerId);
       
+      // Compute forbidden value for last predictor (UI help)
+      const totalPredictionsNext = Object.values(room.predictions).reduce((s, p) => s + p, 0);
+      const isLastNext = room.predictionOrder.length === 1;
+      const forbiddenNext = isLastNext ? (room.cards_this_round - totalPredictionsNext) : null;
+
       io.to(roomCode).emit("nextPlayerPredict", {
-        currentPlayer: nextPlayer.name
+        currentPlayer: nextPlayer.name,
+        maxPrediction: room.cards_this_round,
+        isLast: isLastNext,
+        forbidden: forbiddenNext
       });
       console.log(`Next to predict: ${nextPlayer.name}`);
     }
@@ -281,10 +289,17 @@ io.on("connection", (socket) => {
 
     // Start prediction prompt after a delay to ensure cards are visible
     setTimeout(() => {
+      // Compute forbidden for the first predictor (will generally be null unless single player)
+      const totalPredictions = Object.values(room.predictions).reduce((sum, p) => sum + p, 0);
+      const isLast = room.predictionOrder.length === 1;
+      const forbidden = isLast ? (room.cards_this_round - totalPredictions) : null;
+
       io.to(roomCode).emit("requestPrediction", {
         playerOrder: predictionOrder.map(p => p.name),
         currentPlayer: predictionOrder[0].name,
-        maxPrediction: room.cards_this_round
+        maxPrediction: room.cards_this_round,
+        isLast,
+        forbidden
       });
       console.log(`Requesting prediction from ${predictionOrder[0].name}`);
     }, 1500);
@@ -412,12 +427,18 @@ io.on("connection", (socket) => {
           finalScores: finalScores
         });
         
-        // Reset room state but keep configuration
+        // Reset room state for a fresh game and auto-restart after a short delay
         room.state = GAME_STATES.WAITING;
         room.current_round = 1;
         room.cards_this_round = 1;
         room.turn_index = 0;
         room.ascending = true;
+        // Reset scores for new game
+        room.players.forEach(player => {
+          room.scores[player.id] = 0;
+        });
+
+        setTimeout(() => startRound(roomCode), 3000);
         return;
       }
     }

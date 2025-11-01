@@ -160,6 +160,29 @@ button:hover {
   padding-bottom: 5px;
 }
 
+/* Scoreboard table */
+.score-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.score-table th, .score-table td {
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.score-table thead th {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#scoreTotals {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .messages {
   background: rgba(0, 0, 0, 0.3);
   padding: 15px;

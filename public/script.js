@@ -18,6 +18,48 @@ let myCards = [];
 let justDealt = false; // true right after roundStart until first yourCards
 let isMyTurn = false;
 let myName = "";
+let playersInRoom = [];
+let previousTotals = {};
+
+function renderScoreHeader() {
+  const header = document.getElementById("scoreHeader");
+  if (!header) return;
+  const cols = ["Round", ...playersInRoom];
+  header.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr>`;
+}
+
+function resetScoreboardIfNeeded(round) {
+  if (round !== 1) return;
+  const body = document.getElementById("scoreBody");
+  const totalsDiv = document.getElementById("scoreTotals");
+  if (body) body.innerHTML = "";
+  if (totalsDiv) totalsDiv.innerHTML = "";
+  // Initialize previous totals to 0 for all known players
+  previousTotals = {};
+  playersInRoom.forEach(p => { previousTotals[p] = 0; });
+  renderScoreHeader();
+}
+
+function updateScoreTotals(currentTotals) {
+  const totalsDiv = document.getElementById("scoreTotals");
+  if (!totalsDiv) return;
+  totalsDiv.innerHTML = playersInRoom.map(p => `<strong>${p}</strong>: ${currentTotals[p] ?? 0}`).join(" ");
+}
+
+function appendRoundRow(round, currentTotals) {
+  const body = document.getElementById("scoreBody");
+  if (!body) return;
+  // Ensure player order exists; if not, infer from totals keys
+  if (!playersInRoom || playersInRoom.length === 0) {
+    playersInRoom = Object.keys(currentTotals);
+    renderScoreHeader();
+  }
+  const deltas = playersInRoom.map(p => (currentTotals[p] ?? 0) - (previousTotals[p] ?? 0));
+  const rowHtml = `<tr><td>${round}</td>${deltas.map(d => `<td>${d >= 0 ? '+' + d : d}</td>`).join("")}</tr>`;
+  body.insertAdjacentHTML("beforeend", rowHtml);
+  // Update previous totals snapshot
+  playersInRoom.forEach(p => { previousTotals[p] = currentTotals[p] ?? 0; });
+}
 
 function suitSymbol(suit) {
   if (suit === "Spades") return "♠";
@@ -119,6 +161,7 @@ socket.on("roomCreated", (code) => {
 
 socket.on("playerList", (data) => {
   const { players, config } = data;
+  playersInRoom = players.slice();
   
   // Update players list
   playersList.innerHTML = "";
@@ -150,6 +193,8 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   currentCardsThisRound = cardsThisRound;
   currentAscending = ascending;
   renderRoundHeader();
+  // Reset scoreboard for a fresh game at round 1
+  resetScoreboardIfNeeded(round);
   
   // Clear any previous game state
   document.getElementById("predictions").innerHTML = "";
@@ -340,6 +385,10 @@ socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
   });
   
   document.getElementById("gameMessages").innerHTML = resultsHTML;
+
+  // Update scoreboard: totals header and per-round row
+  appendRoundRow(currentRound, scores);
+  updateScoreTotals(scores);
 });
 
 socket.on("gameOver", ({ finalScores }) => {

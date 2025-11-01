@@ -19,6 +19,41 @@ let justDealt = false; // true right after roundStart until first yourCards
 let isMyTurn = false;
 let myName = "";
 
+function suitSymbol(suit) {
+  if (suit === "Spades") return "♠";
+  if (suit === "Diamonds") return "♦";
+  if (suit === "Clubs") return "♣";
+  if (suit === "Hearts") return "♥";
+  return suit;
+}
+
+function suitColor(suit) {
+  return (suit === "Diamonds" || suit === "Hearts") ? "#dc2626" : "#111827";
+}
+
+function formatCardHTML(card) {
+  const sym = suitSymbol(card.suit);
+  const color = suitColor(card.suit);
+  return `${card.rank} <span style="color:${color}">${sym}</span>`;
+}
+
+function formatCardText(card) {
+  return `${card.rank} ${suitSymbol(card.suit)}`;
+}
+
+// Track current round header data to re-render with optional lead suit
+let currentRound = 0;
+let currentCardsThisRound = 0;
+let currentTrump = "";
+let currentAscending = true;
+
+function renderRoundHeader(leadSuit = null) {
+  const trumpSym = suitSymbol(currentTrump);
+  const trumpColor = suitColor(currentTrump);
+  const leadHtml = leadSuit ? ` | Lead: <span style="color:${suitColor(leadSuit)}">${suitSymbol(leadSuit)}</span>` : "";
+  roundInfo.innerHTML = `Round ${currentRound} | Cards: ${currentCardsThisRound} | Trump: <span style="color:${trumpColor}">${trumpSym}</span> | ${currentAscending ? "Ascending" : "Descending"}${leadHtml}`;
+}
+
 createRoomBtn.onclick = () => {
   const playerName = playerNameInput.value.trim();
   if (!playerName) {
@@ -107,7 +142,11 @@ socket.on("playerList", (data) => {
 socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   lobby.classList.add("hidden");
   gameDiv.classList.remove("hidden");
-  roundInfo.textContent = `Round ${round} | Cards: ${cardsThisRound} | Trump: ${trump} | ${ascending ? "Ascending" : "Descending"}`;
+  currentRound = round;
+  currentTrump = trump;
+  currentCardsThisRound = cardsThisRound;
+  currentAscending = ascending;
+  renderRoundHeader();
   
   // Clear any previous game state
   document.getElementById("predictions").innerHTML = "";
@@ -125,7 +164,7 @@ socket.on("yourCards", (cards) => {
   cards.forEach((c, index) => {
     const div = document.createElement("div");
     div.className = "card";
-    div.textContent = `${c.rank} ${c.suit[0]}`;
+    div.innerHTML = formatCardHTML(c);
     div.setAttribute("data-index", index);
     div.onclick = () => playCard(index);
     handDiv.appendChild(div);
@@ -244,14 +283,18 @@ socket.on("yourTurnToPlay", () => {
 });
 
 socket.on("cardPlayed", ({ playerName, card }) => {
-  showGameMessage(`${playerName} played ${card.rank} of ${card.suit}`);
+  showGameMessage(`${playerName} played ${formatCardText(card)}`);
   handDiv.style.border = "none";
   
   // Add to current trick display
   const currentTrickDiv = document.getElementById("currentTrick");
+  // If this is the first card of the trick, update lead suit in header
+  if (currentTrickDiv.childElementCount === 0) {
+    renderRoundHeader(card.suit);
+  }
   const cardDiv = document.createElement("div");
   cardDiv.className = "played-card";
-  cardDiv.textContent = `${playerName}: ${card.rank} ${card.suit[0]}`;
+  cardDiv.innerHTML = `${playerName}: ${formatCardHTML(card)}`;
   currentTrickDiv.appendChild(cardDiv);
 });
 
@@ -267,6 +310,8 @@ socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
   
   // Clear current trick
   document.getElementById("currentTrick").innerHTML = "";
+  // Reset lead suit indicator
+  renderRoundHeader();
 });
 
 socket.on("nextTrick", ({ firstPlayer, playOrder }) => {

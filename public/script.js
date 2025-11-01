@@ -20,6 +20,8 @@ let isMyTurn = false;
 let myName = "";
 let playersInRoom = [];
 let previousTotals = {};
+let currentTurnPlayerName = null;
+let currentPlayOrder = [];
 
 function renderScoreHeader() {
   const header = document.getElementById("scoreHeader");
@@ -38,12 +40,22 @@ function resetScoreboardIfNeeded(round) {
   previousTotals = {};
   playersInRoom.forEach(p => { previousTotals[p] = 0; });
   renderScoreHeader();
+  updateScoreTotals(previousTotals);
 }
 
 function updateScoreTotals(currentTotals) {
   const totalsDiv = document.getElementById("scoreTotals");
   if (!totalsDiv) return;
-  totalsDiv.innerHTML = playersInRoom.map(p => `<strong>${p}</strong>: ${currentTotals[p] ?? 0}`).join(" ");
+  totalsDiv.innerHTML = playersInRoom.map(p => {
+    const isCurrent = (p === currentTurnPlayerName);
+    const cls = `score-pill${isCurrent ? ' current-turn' : ''}`;
+    const score = currentTotals[p] ?? 0;
+    return `<div class="${cls}" data-player="${p}"><span class="pill-name">${p}</span><span class="pill-score">${score}</span></div>`;
+  }).join("");
+}
+
+function refreshTurnHighlight() {
+  updateScoreTotals(previousTotals || {});
 }
 
 function appendRoundRow(round, currentTotals) {
@@ -201,6 +213,8 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   document.getElementById("currentTrick").innerHTML = "";
   document.getElementById("gameMessages").innerHTML = "";
   document.getElementById("tricksWon").innerHTML = "";
+  const predPrompt1 = document.getElementById("predictionPrompt");
+  if (predPrompt1) { predPrompt1.classList.add("hidden"); predPrompt1.innerHTML = ""; }
   justDealt = true;
   
   showGameMessage(`Round ${round} started! Trump suit: ${trump}`);
@@ -244,6 +258,8 @@ socket.on("errorMessage", msg => {
 socket.on("requestPrediction", ({ playerOrder, currentPlayer, maxPrediction, isLast, forbidden }) => {
   console.log("Prediction requested. Current player:", currentPlayer, "My name:", myName);
   isMyTurn = (currentPlayer === myName);
+  currentTurnPlayerName = currentPlayer;
+  refreshTurnHighlight();
   
   if (isMyTurn) {
     // Small delay to ensure cards are visible
@@ -252,12 +268,19 @@ socket.on("requestPrediction", ({ playerOrder, currentPlayer, maxPrediction, isL
     }, 500);
   } else {
     showGameMessage(`Waiting for ${currentPlayer} to predict...`);
+    const prompt = document.getElementById("predictionPrompt");
+    if (prompt) {
+      prompt.classList.add("hidden");
+      prompt.innerHTML = "";
+    }
   }
 });
 
 socket.on("nextPlayerPredict", ({ currentPlayer, maxPrediction, isLast, forbidden }) => {
   console.log("Next player to predict:", currentPlayer);
   isMyTurn = (currentPlayer === myName);
+  currentTurnPlayerName = currentPlayer;
+  refreshTurnHighlight();
   
   if (isMyTurn) {
     showGameMessage("It's your turn to predict!");
@@ -266,39 +289,41 @@ socket.on("nextPlayerPredict", ({ currentPlayer, maxPrediction, isLast, forbidde
     showPredictionInput(maxPred, isLast, forbidden);
   } else {
     showGameMessage(`Waiting for ${currentPlayer} to predict...`);
+    const prompt = document.getElementById("predictionPrompt");
+    if (prompt) {
+      prompt.classList.add("hidden");
+      prompt.innerHTML = "";
+    }
   }
 });
 
 function showPredictionInput(maxPrediction, isLast = false, forbidden = null) {
   showGameMessage(`It's your turn to predict! How many tricks will you win? (0-${maxPrediction})`);
-  
-  // Create prediction UI
-  const predictionDiv = document.createElement("div");
-  predictionDiv.id = "predictionInput";
-  predictionDiv.innerHTML = `
-    <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
-      <p>Make your prediction (0-${maxPrediction})${isLast && forbidden !== null ? ` — Note: ${forbidden} is disabled for last player` : ''}:</p>
-      <div id="predictionButtons" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
-        ${Array.from({length: maxPrediction + 1}, (_, i) => {
-          const isForbidden = isLast && forbidden === i;
-          const disabledAttr = isForbidden ? 'disabled' : '';
-          const title = isForbidden ? 'Not allowed for last player this round' : '';
-          const style = `padding: 8px 12px;${isForbidden ? ' opacity: 0.5; cursor: not-allowed; pointer-events: none;' : ''}`;
-          return `<button ${disabledAttr} title="${title}" onclick="submitPrediction(${i})" style="${style}">${i}</button>`;
-        }).join('')}
-      </div>
-    </div>
+
+  const prompt = document.getElementById("predictionPrompt");
+  if (!prompt) return;
+
+  const buttonsHtml = Array.from({ length: maxPrediction + 1 }, (_, i) => {
+    const isForbidden = isLast && forbidden === i;
+    const disabledAttr = isForbidden ? 'disabled' : '';
+    const title = isForbidden ? 'Not allowed for last player this round' : '';
+    return `<button ${disabledAttr} title="${title}" onclick="submitPrediction(${i})" class="pred-btn">${i}</button>`;
+  }).join('');
+
+  prompt.innerHTML = `
+      <h3>Make your prediction</h3>
+      <p>Choose how many tricks you will win (0-${maxPrediction})${isLast && forbidden !== null ? ` — Note: ${forbidden} is disabled for last player` : ''}</p>
+      <div class="prediction-buttons">${buttonsHtml}</div>
   `;
-  
-  const messagesDiv = document.getElementById("gameMessages");
-  messagesDiv.appendChild(predictionDiv);
+  prompt.classList.remove("hidden");
 }
 
 // Global function for prediction buttons
 window.submitPrediction = function(prediction) {
-  const predictionInput = document.getElementById("predictionInput");
-  if (predictionInput) {
-    predictionInput.remove();
+  const prompt = document.getElementById("predictionPrompt");
+  if (prompt) {
+    prompt.classList.add("hidden");
+    prompt.innerHTML = "";
   }
   
   socket.emit("makePrediction", { roomCode, prediction });
@@ -310,6 +335,11 @@ socket.on("predictionMade", ({ playerName, prediction }) => {
 });
 
 socket.on("allPredictionsMade", (predictions) => {
+  const prompt = document.getElementById("predictionPrompt");
+  if (prompt) {
+    prompt.classList.add("hidden");
+    prompt.innerHTML = "";
+  }
   let predictionsHTML = "<h3>All Predictions:</h3>";
   Object.keys(predictions).forEach(player => {
     predictionsHTML += `<p>${player}: ${predictions[player]} tricks</p>`;
@@ -321,6 +351,11 @@ socket.on("allPredictionsMade", (predictions) => {
 // Play phase
 socket.on("playPhaseStart", ({ firstPlayer, playOrder }) => {
   showGameMessage(`Play phase started! ${firstPlayer} goes first.`);
+  currentPlayOrder = Array.isArray(playOrder) ? playOrder.slice() : [];
+  currentTurnPlayerName = firstPlayer;
+  refreshTurnHighlight();
+  const predPrompt2 = document.getElementById("predictionPrompt");
+  if (predPrompt2) { predPrompt2.classList.add("hidden"); predPrompt2.innerHTML = ""; }
 });
 
 socket.on("yourTurnToPlay", () => {
@@ -328,6 +363,8 @@ socket.on("yourTurnToPlay", () => {
   showGameMessage("🎯 It's your turn to play a card! Click on a card from your hand.");
   // Highlight hand or show some indication
   handDiv.style.border = "2px solid #ffb703";
+  currentTurnPlayerName = myName;
+  refreshTurnHighlight();
 });
 
 socket.on("cardPlayed", ({ playerName, card }) => {
@@ -344,6 +381,18 @@ socket.on("cardPlayed", ({ playerName, card }) => {
   cardDiv.className = "played-card";
   cardDiv.innerHTML = `${playerName}: ${formatCardHTML(card)}`;
   currentTrickDiv.appendChild(cardDiv);
+
+  if (currentPlayOrder && currentPlayOrder.length > 0) {
+    const idx = currentPlayOrder.indexOf(playerName);
+    if (idx !== -1) {
+      const nextIdx = (idx + 1) % currentPlayOrder.length;
+      const trickCount = currentTrickDiv.childElementCount;
+      if (trickCount < currentPlayOrder.length) {
+        currentTurnPlayerName = currentPlayOrder[nextIdx];
+        refreshTurnHighlight();
+      }
+    }
+  }
 });
 
 socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
@@ -355,6 +404,8 @@ socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
     tricksHTML += `<p>${player}: ${tricksWon[player]}</p>`;
   });
   document.getElementById("tricksWon").innerHTML = tricksHTML;
+  currentTurnPlayerName = playerName;
+  refreshTurnHighlight();
   
   // Keep the completed trick visible for 4 seconds before clearing
   setTimeout(() => {
@@ -366,6 +417,9 @@ socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
 
 socket.on("nextTrick", ({ firstPlayer, playOrder }) => {
   showGameMessage(`Next trick! ${firstPlayer} leads.`);
+  currentPlayOrder = Array.isArray(playOrder) ? playOrder.slice() : currentPlayOrder;
+  currentTurnPlayerName = firstPlayer;
+  refreshTurnHighlight();
 });
 
 socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
@@ -391,6 +445,7 @@ socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
   // Update scoreboard: totals header and per-round row
   appendRoundRow(currentRound, scores);
   updateScoreTotals(scores);
+  previousTotals = { ...scores };
 });
 
 socket.on("gameOver", ({ finalScores }) => {
@@ -402,12 +457,20 @@ socket.on("gameOver", ({ finalScores }) => {
   document.getElementById("gameMessages").innerHTML = finalHTML;
   // No popup; server will auto-start the next game. Optionally inform players.
   showGameMessage("Starting next game shortly...");
+  currentTurnPlayerName = null;
+  refreshTurnHighlight();
+  const predPrompt3 = document.getElementById("predictionPrompt");
+  if (predPrompt3) { predPrompt3.classList.add("hidden"); predPrompt3.innerHTML = ""; }
 });
 
 socket.on("gameEnded", (reason) => {
   alert(`Game ended: ${reason}`);
   gameDiv.classList.add("hidden");
   lobby.classList.remove("hidden");
+  currentTurnPlayerName = null;
+  refreshTurnHighlight();
+  const predPrompt4 = document.getElementById("predictionPrompt");
+  if (predPrompt4) { predPrompt4.classList.add("hidden"); predPrompt4.innerHTML = ""; }
 });
 
 function playCard(cardIndex) {

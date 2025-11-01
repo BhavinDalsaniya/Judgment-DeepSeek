@@ -76,6 +76,8 @@ io.on("connection", (socket) => {
       scores: {}, // Store player scores
       current_trick: [], // Current trick cards
       playerHands: {}, // Store each player's hand
+      current_play_order: [], // Ordered list of player IDs for current trick
+      next_player_index: 0, // Index into current_play_order for whose turn it is
       gameConfig: {
         decks: number_of_decks,
         maxCards: max_round_cards,
@@ -237,6 +239,8 @@ io.on("connection", (socket) => {
     room.predictions = {};
     room.tricks_won = {};
     room.current_trick = [];
+    room.current_play_order = [];
+    room.next_player_index = 0;
     players.forEach(player => {
       room.tricks_won[player.id] = 0;
     });
@@ -288,6 +292,8 @@ io.on("connection", (socket) => {
     const room = rooms[roomCode];
     const leaderIndex = room.turn_index % room.players.length;
     const playOrder = room.players.slice(leaderIndex).concat(room.players.slice(0, leaderIndex));
+    room.current_play_order = playOrder.map(p => p.id);
+    room.next_player_index = 0;
     
     io.to(roomCode).emit("playPhaseStart", {
       firstPlayer: playOrder[0].name,
@@ -432,6 +438,15 @@ io.on("connection", (socket) => {
       return;
     }
 
+    // Enforce turn order strictly
+    if (room.current_play_order && room.current_play_order.length > 0) {
+      const expectedPlayerId = room.current_play_order[room.next_player_index];
+      if (socket.id !== expectedPlayerId) {
+        socket.emit("errorMessage", "It's not your turn to play");
+        return;
+      }
+    }
+
     // Validate card play
     const hand = room.playerHands[socket.id];
     if (!hand || cardIndex < 0 || cardIndex >= hand.length) {
@@ -439,18 +454,18 @@ io.on("connection", (socket) => {
       return;
     }
 
-    const card = hand[cardIndex];
-    
     // Check if player must follow suit
     if (room.current_trick.length > 0) {
       const leadSuit = room.current_trick[0].card.suit;
       const hasLeadSuit = hand.some(c => c.suit === leadSuit);
       
-      if (hasLeadSuit && card.suit !== leadSuit) {
+      if (hasLeadSuit && hand[cardIndex].suit !== leadSuit) {
         socket.emit("errorMessage", "You must follow the lead suit if possible");
         return;
       }
     }
+
+    const card = hand[cardIndex];
 
     // Remove card from hand and add to trick
     room.playerHands[socket.id] = hand.filter((_, index) => index !== cardIndex);
@@ -464,6 +479,11 @@ io.on("connection", (socket) => {
       playerName: player.name,
       card
     });
+
+    // Advance to next player in order
+    if (room.current_play_order && room.current_play_order.length > 0) {
+      room.next_player_index = (room.next_player_index + 1) % room.players.length;
+    }
 
     // If all players have played a card, determine trick winner
     if (room.current_trick.length === room.players.length) {
@@ -496,6 +516,8 @@ io.on("connection", (socket) => {
         // Next trick starts with the winner
         const winnerIndex = room.players.findIndex(p => p.id === winningPlay.playerId);
         const playOrder = room.players.slice(winnerIndex).concat(room.players.slice(0, winnerIndex));
+        room.current_play_order = playOrder.map(p => p.id);
+        room.next_player_index = 0;
         
         setTimeout(() => {
           io.to(roomCode).emit("nextTrick", {
@@ -506,12 +528,17 @@ io.on("connection", (socket) => {
         }, 1500);
       }
     } else {
-      // Notify next player to play
-      const currentPlayerIndex = room.players.findIndex(p => p.id === socket.id);
-      const nextPlayerIndex = (currentPlayerIndex + 1) % room.players.length;
-      const nextPlayer = room.players[nextPlayerIndex];
-      
-      io.to(nextPlayer.id).emit("yourTurnToPlay");
+      // Notify next player to play using enforced order
+      if (room.current_play_order && room.current_play_order.length > 0) {
+        const nextPlayerId = room.current_play_order[room.next_player_index];
+        io.to(nextPlayerId).emit("yourTurnToPlay");
+      } else {
+        // Fallback to original logic if order is not initialized
+        const currentPlayerIndex = room.players.findIndex(p => p.id === socket.id);
+        const nextPlayerIndex = (currentPlayerIndex + 1) % room.players.length;
+        const nextPlayer = room.players[nextPlayerIndex];
+        io.to(nextPlayer.id).emit("yourTurnToPlay");
+      }
     }
   });
 

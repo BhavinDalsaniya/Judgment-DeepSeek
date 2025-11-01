@@ -340,7 +340,8 @@ socket.on("allPredictionsMade", (predictions) => {
     prompt.classList.add("hidden");
     prompt.innerHTML = "";
   }
-  let predictionsHTML = "<h3>All Predictions:</h3>";
+  // let predictionsHTML = "<h3>All Predictions:</h3>";
+  let predictionsHTML = "";
   Object.keys(predictions).forEach(player => {
     predictionsHTML += `<p>${player}: ${predictions[player]} tricks</p>`;
   });

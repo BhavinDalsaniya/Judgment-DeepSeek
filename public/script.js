@@ -400,7 +400,8 @@ socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
   showGameMessage(`🎉 ${playerName} won the trick!`);
   
   // Update tricks won display
-  let tricksHTML = "<h3>Tricks Won:</h3>";
+  // let tricksHTML = "<h3>Tricks Won:</h3>";
+  let tricksHTML = "";
   Object.keys(tricksWon).forEach(player => {
     tricksHTML += `<p>${player}: ${tricksWon[player]}</p>`;
   });

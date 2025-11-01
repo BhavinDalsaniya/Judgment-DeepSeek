@@ -245,6 +245,9 @@ io.on("connection", (socket) => {
       room.tricks_won[player.id] = 0;
     });
 
+    // Enter predicting state immediately to block early plays
+    room.state = GAME_STATES.PREDICTING;
+
     // Deal cards to players
     room.playerHands = {};
     players.forEach(player => {
@@ -276,9 +279,8 @@ io.on("connection", (socket) => {
       ascending: room.ascending
     });
 
-    // Start prediction phase after a delay to ensure cards are visible
+    // Start prediction prompt after a delay to ensure cards are visible
     setTimeout(() => {
-      room.state = GAME_STATES.PREDICTING;
       io.to(roomCode).emit("requestPrediction", {
         playerOrder: predictionOrder.map(p => p.name),
         currentPlayer: predictionOrder[0].name,
@@ -346,6 +348,9 @@ io.on("connection", (socket) => {
   function endRound(roomCode) {
     const room = rooms[roomCode];
     
+    // Prevent plays during scoring/transition
+    room.state = GAME_STATES.SCORING;
+
     // Calculate scores
     room.players.forEach(player => {
       const predicted = room.predictions[player.id] || 0;

@@ -15,6 +15,7 @@ const handDiv = document.getElementById("hand");
 
 let roomCode = "";
 let myCards = [];
+let justDealt = false; // true right after roundStart until first yourCards
 let isMyTurn = false;
 let myName = "";
 
@@ -113,6 +114,7 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   document.getElementById("currentTrick").innerHTML = "";
   document.getElementById("gameMessages").innerHTML = "";
   document.getElementById("tricksWon").innerHTML = "";
+  justDealt = true;
   
   showGameMessage(`Round ${round} started! Trump suit: ${trump}`);
 });
@@ -129,7 +131,10 @@ socket.on("yourCards", (cards) => {
     handDiv.appendChild(div);
   });
   
-  showGameMessage(`You received ${cards.length} cards. Look at your hand above.`);
+  if (justDealt) {
+    showGameMessage(`You received ${cards.length} cards. Look at your hand above.`);
+    justDealt = false;
+  }
 });
 
 socket.on("joinedRoom", (code) => {
@@ -141,6 +146,11 @@ socket.on("joinedRoom", (code) => {
 socket.on("errorMessage", msg => {
   alert(msg);
   console.error("Error:", msg);
+  // If an invalid play was attempted during our turn, allow retry
+  if (msg.includes("must follow the lead suit") || msg.includes("Invalid card selection")) {
+    isMyTurn = true;
+    handDiv.style.border = "2px solid #ffb703";
+  }
 });
 
 // Prediction phase - FIXED: Show prediction input only when it's your turn AND after cards are visible
@@ -318,7 +328,6 @@ function playCard(cardIndex) {
   console.log("Playing card:", card, "Index:", cardIndex);
   
   socket.emit("playCard", { roomCode, cardIndex });
-  isMyTurn = false;
 }
 
 function showGameMessage(message) {

@@ -48,7 +48,7 @@ docker run -d -p 3000:3000 --name judgment-app judgment-deepseek
 # 1️⃣1️⃣ (Optional) Check logs
 docker logs -f judgment-app
 
-
+# AAA
 
 cd ~/Judgment-DeepSeek
 git pull

@@ -50,9 +50,16 @@ docker logs -f judgment-app
 
 # AAA
 
+'''
 cd ~/Judgment-DeepSeek
+
 git pull
+
 docker stop judgment-app
+
 docker rm judgment-app
+
 docker build -t judgment-deepseek .
+
 docker run -d -p 3000:3000 --name judgment-app judgment-deepseek
+'''

@@ -35,12 +35,15 @@ function resetScoreboardIfNeeded(round) {
   if (round !== 1) return;
   const body = document.getElementById("scoreBody");
   const totalsDiv = document.getElementById("scoreTotals");
+  // Clear per-round rows for a clean view of the new cycle, but keep running totals
   if (body) body.innerHTML = "";
-  if (totalsDiv) totalsDiv.innerHTML = "";
-  // Initialize previous totals to 0 for all known players
-  previousTotals = {};
-  playersInRoom.forEach(p => { previousTotals[p] = 0; });
+  // Only initialize totals to zero if we have no prior totals (first-ever game)
+  if (!previousTotals || Object.keys(previousTotals).length === 0) {
+    previousTotals = {};
+    playersInRoom.forEach(p => { previousTotals[p] = 0; });
+  }
   renderScoreHeader();
+  // Do not clear totalsDiv; re-render using existing totals so scores continue
   updateScoreTotals(previousTotals);
 }
 

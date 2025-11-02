@@ -144,11 +144,17 @@ button:active {
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 25px;
+  margin-bottom: 16px;
   gap: 12px;
   padding: 20px;
   border-radius: 16px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure the panel that follows the hand has extra spacing */
+#hand + .panel {
+  margin-top: 12px;
 }
 
 .card {

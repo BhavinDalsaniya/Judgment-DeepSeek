@@ -434,9 +434,6 @@ io.on("connection", (socket) => {
         room.turn_index = 0;
         room.ascending = true;
         // Reset scores for new game
-        room.players.forEach(player => {
-          room.scores[player.id] = 0;
-        });
 
         setTimeout(() => startRound(roomCode), 3000);
         return;

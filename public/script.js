@@ -219,6 +219,7 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   resetScoreboardIfNeeded(round);
   
   // Clear any previous game state
+  latestPredictions = {}; // prepare live predictions map for this round
   document.getElementById("predictions").innerHTML = "";
   document.getElementById("currentTrick").innerHTML = "";
   document.getElementById("gameMessages").innerHTML = "";
@@ -331,11 +332,14 @@ function showPredictionInput(maxPrediction, isLast = false, forbidden = null) {
 function renderPredictions(predictions) {
   const predDiv = document.getElementById("predictions");
   if (!predDiv) return;
+  const order = (playersInRoom && playersInRoom.length > 0) ? playersInRoom : Object.keys(predictions || {});
   let predictionsHTML = "";
-  Object.keys(predictions).forEach(player => {
+  order.forEach(player => {
+    const val = predictions ? predictions[player] : undefined;
+    const shown = (val === undefined || val === null) ? "—" : `${val}`;
     const isCurrent = (player === currentTurnPlayerName);
     const cls = isCurrent ? 'current-turn' : '';
-    predictionsHTML += `<p class="pred-line ${cls}" data-player="${player}">${player}: ${predictions[player]} tricks</p>`;
+    predictionsHTML += `<p class="pred-line ${cls}" data-player="${player}">${player}: ${shown} tricks</p>`;
   });
   predDiv.innerHTML = predictionsHTML;
 }
@@ -354,6 +358,10 @@ window.submitPrediction = function(prediction) {
 
 socket.on("predictionMade", ({ playerName, prediction }) => {
   showGameMessage(`${playerName} predicted ${prediction} tricks`);
+  // Live update predictions panel
+  if (!latestPredictions) latestPredictions = {};
+  latestPredictions[playerName] = prediction;
+  renderPredictions(latestPredictions);
 });
 
 socket.on("allPredictionsMade", (predictions) => {

@@ -148,7 +148,7 @@ createRoomBtn.onclick = () => {
   socket.emit("createRoom", {
     roomCode,
     playerName,
-    maxPlayers: Math.min(4, maxPlayersAllowed),
+    maxPlayers: Math.min(10, maxPlayersAllowed),
     number_of_decks,
     max_round_cards
   });

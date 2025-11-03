@@ -457,8 +457,8 @@ socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
   let resultsHTML = "<h3>Round Results:</h3>";
   Object.keys(predictions).forEach(player => {
     const pred = predictions[player];
-    const scoreChange = pred.predicted === pred.actual ? 
-      `+${10 + pred.actual}` : 
+    const scoreChange = pred.predicted === pred.actual ?
+      `+${10 + (pred.actual * 11)}` :
       `-${Math.abs(pred.predicted - pred.actual)}`;
     
     resultsHTML += `

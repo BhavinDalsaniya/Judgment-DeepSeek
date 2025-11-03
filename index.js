@@ -372,7 +372,7 @@ io.on("connection", (socket) => {
       const actual = room.tricks_won[player.id] || 0;
       
       if (predicted === actual) {
-        room.scores[player.id] += 10 + actual; // Exact prediction bonus
+        room.scores[player.id] += 10 + (actual * 11); // Exact prediction bonus (per-hand scaling)
       } else {
         room.scores[player.id] -= Math.abs(predicted - actual);
       }

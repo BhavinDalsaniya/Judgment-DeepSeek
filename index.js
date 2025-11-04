@@ -587,10 +587,37 @@ io.on("connection", (socket) => {
           config: room.gameConfig
         });
         
-        // If game is in progress, end it due to player disconnection
+        // If game is in progress, try to continue with remaining players
         if (room.state !== GAME_STATES.WAITING) {
-          io.to(roomCode).emit("gameEnded", `${playerName} has disconnected`);
-          room.state = GAME_STATES.WAITING;
+          if (room.players.length >= 2) {
+            // Clean up state for the disconnected player
+            delete room.scores[socket.id];
+            delete room.predictions[socket.id];
+            delete room.tricks_won[socket.id];
+            delete room.playerHands[socket.id];
+            if (Array.isArray(room.current_play_order) && room.current_play_order.length) {
+              room.current_play_order = room.current_play_order.filter(id => id !== socket.id);
+              if (room.next_player_index >= room.current_play_order.length) {
+                room.next_player_index = 0;
+              }
+            }
+            // Inform players and restart the current round with remaining players
+            io.to(roomCode).emit("errorMessage", `${playerName} disconnected. Restarting current round with ${room.players.length} players.`);
+            // Ensure turn index stays in range
+            room.turn_index = room.turn_index % room.players.length;
+            // Reset transient per-round state; keep scores and round counters
+            room.predictions = {};
+            room.tricks_won = {};
+            room.current_trick = [];
+            room.current_play_order = [];
+            room.next_player_index = 0;
+            room.state = GAME_STATES.PREDICTING;
+            setTimeout(() => startRound(roomCode), 500);
+          } else {
+            // Not enough players to continue
+            io.to(roomCode).emit("gameEnded", `${playerName} has disconnected`);
+            room.state = GAME_STATES.WAITING;
+          }
         }
 
         console.log(`Player ${playerName} disconnected from room ${roomCode}`);

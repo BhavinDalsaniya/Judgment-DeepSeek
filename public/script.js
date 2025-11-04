@@ -19,6 +19,7 @@ let myCards = [];
 let justDealt = false; // true right after roundStart until first yourCards
 let isMyTurn = false;
 let myName = "";
+let interTrickPause = false; // blocks card plays between tricks
 let playersInRoom = [];
 let previousTotals = {};
 let currentTurnPlayerName = null;
@@ -427,6 +428,7 @@ socket.on("playPhaseStart", ({ firstPlayer, playOrder }) => {
 
 socket.on("yourTurnToPlay", () => {
   isMyTurn = true;
+  interTrickPause = false; // allow play only when server signals your turn
   showGameMessage("🎯 It's your turn to play a card! Click on a card from your hand.");
   // Highlight hand or show some indication
   handDiv.style.border = "2px solid #ffb703";
@@ -464,6 +466,10 @@ socket.on("cardPlayed", ({ playerName, card }) => {
 
 socket.on("trickWon", ({ playerName, trick, tricksWon }) => {
   showGameMessage(`🎉 ${playerName} won the trick!`);
+  // During the display window, block any plays from clients
+  interTrickPause = true;
+  isMyTurn = false;
+  handDiv.style.border = "none";
   
   // Update tricks won display
   // let tricksHTML = "<h3>Tricks Won:</h3>";
@@ -491,6 +497,9 @@ socket.on("nextTrick", ({ firstPlayer, playOrder }) => {
 });
 
 socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
+  // Prevent any accidental plays between rounds
+  interTrickPause = true;
+  isMyTurn = false;
   let resultsHTML = "<h3>Round Results:</h3>";
   Object.keys(predictions).forEach(player => {
     const pred = predictions[player];
@@ -546,6 +555,10 @@ socket.on("gameEnded", (reason) => {
 });
 
 function playCard(cardIndex) {
+  if (interTrickPause) {
+    alert("Please wait… next trick is about to start.");
+    return;
+  }
   if (!isMyTurn) {
     alert("It's not your turn!");
     return;

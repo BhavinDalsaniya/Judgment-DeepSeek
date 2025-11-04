@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Judgment Card Game</title>
   <link rel="stylesheet" href="style.css">
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="/socket.io/socket.io.js" defer></script>
 </head>
 <body>
   <div class="container">
@@ -81,14 +81,6 @@
     </div>
 
     <div id="game" class="hidden">
-      <!-- <h2 id="roundInfo"></h2> -->
-      <!-- <div id="predictionPrompt" class="panel hidden"></div> -->
-
-      <!-- <div id="scoreboard" class="panel">
-        <h3>Scores</h3>
-        <div id="scoreTotals"></div>
-      </div> -->
-      
       <div class="game-panels">
         <div class="panel">
           <h3>Predictions</h3>

@@ -14,6 +14,24 @@ const gameDiv = document.getElementById("game");
 const roundInfo = document.getElementById("roundInfo");
 const handDiv = document.getElementById("hand");
 
+// Delegate clicks for cards to a single handler to reduce listeners
+let handClickBound = false;
+function ensureHandClickHandler() {
+  if (handClickBound) return;
+  handClickBound = true;
+  handDiv.addEventListener("click", (e) => {
+    const cardEl = e.target.closest(".card");
+    if (!cardEl || !handDiv.contains(cardEl)) return;
+    const idx = parseInt(cardEl.getAttribute("data-index"), 10);
+    if (!Number.isNaN(idx)) {
+      playCard(idx);
+    }
+  }, { passive: true });
+}
+
+// Initialize delegated click handler once
+ensureHandClickHandler();
+
 let roomCode = "";
 let myCards = [];
 let justDealt = false; // true right after roundStart until first yourCards
@@ -275,14 +293,15 @@ socket.on("yourCards", (cards) => {
     if (sv(a.card.suit) !== sv(b.card.suit)) return sv(a.card.suit) - sv(b.card.suit);
     return ra - rb;
   });
+  const frag = document.createDocumentFragment();
   withIndex.forEach(({ card, originalIndex }) => {
     const div = document.createElement("div");
     div.className = "card";
     div.innerHTML = formatCardHTML(card);
     div.setAttribute("data-index", originalIndex);
-    div.onclick = () => playCard(originalIndex);
-    handDiv.appendChild(div);
+    frag.appendChild(div);
   });
+  handDiv.appendChild(frag);
   
   if (justDealt) {
     showGameMessage(`You received ${cards.length} cards. Look at your hand above.`);

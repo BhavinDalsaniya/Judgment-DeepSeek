@@ -2,12 +2,21 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import { createDeck } from "./public/deck.js";
+import compression from "compression";
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static("public"));
+// Enable gzip compression for faster responses
+app.use(compression());
+
+// Serve static assets with caching
+app.use(express.static("public", {
+  maxAge: "7d",
+  etag: true,
+  immutable: true
+}));
 
 // const PORT = 3000;
 // server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

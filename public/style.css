@@ -23,8 +23,8 @@ input, button, select {
   border-radius: 12px;
   border: none;
   font-size: 16px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 input, select {
@@ -35,7 +35,7 @@ input, select {
 input:focus, select:focus {
   outline: none;
   border-color: #ffb703;
-  box-shadow: 0 0 0 3px rgba(255, 183, 3, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 183, 3, 0.28);
 }
 
 button {
@@ -59,14 +59,16 @@ button::after {
   transition: left 0.5s;
 }
 
-button:hover::after {
-  left: 100%;
-}
+@media (hover: hover) {
+  button:hover::after {
+    left: 100%;
+  }
 
-button:hover {
-  background: linear-gradient(135deg, #fb8500 0%, #e63946 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(251, 133, 0, 0.4);
+  button:hover {
+    background: linear-gradient(135deg, #fb8500 0%, #e63946 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(251, 133, 0, 0.38);
+  }
 }
 
 button:active {
@@ -84,9 +86,8 @@ button:active {
   padding: 20px;
   border-radius: 16px;
   text-align: left;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .game-options label {
@@ -113,9 +114,8 @@ button:active {
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 25px;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .player-list {
@@ -123,9 +123,8 @@ button:active {
   padding: 24px;
   border-radius: 16px;
   margin-bottom: 25px;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 #gameConfig {
@@ -148,7 +147,6 @@ button:active {
   gap: 12px;
   padding: 20px;
   border-radius: 16px;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -175,8 +173,8 @@ button:active {
   justify-content: center;
   cursor: pointer;
   font-weight: bold;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   position: relative;
   overflow: hidden;
 }
@@ -206,14 +204,15 @@ button:active {
 .card .suit {
   font-size: 58px;
   margin-top: 4px;
-  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.3));
 }
 
-.card:hover {
-  transform: translateY(-8px) scale(1.05);
-  background: linear-gradient(135deg, #8ecae6 0%, #219ebc 100%);
-  border-color: #ffb703;
-  box-shadow: 0 12px 25px rgba(255, 183, 3, 0.3);
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-8px) scale(1.05);
+    background: linear-gradient(135deg, #8ecae6 0%, #219ebc 100%);
+    border-color: #ffb703;
+    box-shadow: 0 10px 20px rgba(255, 183, 3, 0.28);
+  }
 }
 
 .played-card {
@@ -253,14 +252,15 @@ button:active {
   padding: 20px;
   border-radius: 16px;
   text-align: left;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease;
 }
 
-.panel:hover {
-  transform: translateY(-5px);
+@media (hover: hover) {
+  .panel:hover {
+    transform: translateY(-5px);
+  }
 }
 
 .panel h3 {
@@ -306,8 +306,7 @@ button:active {
   padding: 8px 16px;
   border-radius: 20px;
   font-weight: bold;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .score-pill .pill-name {
@@ -337,7 +336,6 @@ button:active {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(5px);
 }
 
 .prediction-modal {
@@ -346,7 +344,7 @@ button:active {
   color: #fff;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.45);
   padding: 24px;
   text-align: center;
   animation: modalAppear 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -389,15 +387,17 @@ button:active {
   color: #ffffff;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   min-width: 60px;
   box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
 }
 
-.pred-btn:hover {
-  background: linear-gradient(135deg, #34d399 0%, #22c55e 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.45);
+@media (hover: hover) {
+  .pred-btn:hover {
+    background: linear-gradient(135deg, #34d399 0%, #22c55e 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(16, 185, 129, 0.45);
+  }
 }
 
 .pred-btn:disabled {
@@ -432,7 +432,6 @@ button:active {
   max-height: 200px;
   overflow-y: auto;
   text-align: left;
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -466,14 +465,16 @@ button:active {
   margin: 8px 0;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, background 0.3s ease, border-left-color 0.3s ease;
   border-left: 4px solid transparent;
 }
 
-#players li:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
-  border-left-color: #ffb703;
-  transform: translateX(5px);
+@media (hover: hover) {
+  #players li:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border-left-color: #ffb703;
+    transform: translateX(5px);
+  }
 }
 
 /* Predictions: highlight current-turn name */

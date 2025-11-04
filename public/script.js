@@ -264,12 +264,22 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
 socket.on("yourCards", (cards) => {
   myCards = cards;
   handDiv.innerHTML = "";
-  cards.forEach((c, index) => {
+  const rankVal = {"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":11,"Q":12,"K":13,"A":14};
+  const suitVal = {"Spades":0,"Hearts":1,"Diamonds":2,"Clubs":3};
+  const withIndex = cards.map((c, i) => ({ card: c, originalIndex: i }));
+  withIndex.sort((a, b) => {
+    const sv = (s) => suitVal[s] ?? 99;
+    const ra = rankVal[a.card.rank] ?? 0;
+    const rb = rankVal[b.card.rank] ?? 0;
+    if (sv(a.card.suit) !== sv(b.card.suit)) return sv(a.card.suit) - sv(b.card.suit);
+    return ra - rb;
+  });
+  withIndex.forEach(({ card, originalIndex }) => {
     const div = document.createElement("div");
     div.className = "card";
-    div.innerHTML = formatCardHTML(c);
-    div.setAttribute("data-index", index);
-    div.onclick = () => playCard(index);
+    div.innerHTML = formatCardHTML(card);
+    div.setAttribute("data-index", originalIndex);
+    div.onclick = () => playCard(originalIndex);
     handDiv.appendChild(div);
   });
   

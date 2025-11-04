@@ -157,6 +157,11 @@ button:active {
   margin-top: 12px;
 }
 
+/* Ensure space between scoreboard and the following table panel */
+#scoreboard.panel {
+  margin-bottom: 16px;
+}
+
 .card {
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;

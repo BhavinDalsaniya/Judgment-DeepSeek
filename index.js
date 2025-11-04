@@ -27,9 +27,11 @@ const GAME_STATES = {
 };
 
 // Validate game configuration
-function validateGameConfig(number_of_decks, max_round_cards, maxPlayers) {
+function validateGameConfig(number_of_decks, min_round_cards, max_round_cards, maxPlayers) {
   if (number_of_decks < 1) return "Number of decks must be at least 1";
+  if (min_round_cards < 1) return "Minimum round cards must be at least 1";
   if (max_round_cards < 1) return "Maximum round cards must be at least 1";
+  if (min_round_cards > max_round_cards) return "Minimum cards cannot exceed maximum cards";
   if (maxPlayers < 2) return "Need at least 2 players";
   if (max_round_cards * maxPlayers > 52 * number_of_decks) {
     return "Not enough cards for the specified configuration";
@@ -49,14 +51,14 @@ function getCardValue(rank) {
 io.on("connection", (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
-  socket.on("createRoom", ({ roomCode, playerName, maxPlayers, number_of_decks, max_round_cards }) => {
+  socket.on("createRoom", ({ roomCode, playerName, maxPlayers, number_of_decks, max_round_cards, min_round_cards }) => {
     if (rooms[roomCode]) {
       socket.emit("errorMessage", "Room already exists");
       return;
     }
 
     // Validate configuration
-    const validationError = validateGameConfig(number_of_decks, max_round_cards, maxPlayers);
+    const validationError = validateGameConfig(number_of_decks, min_round_cards, max_round_cards, maxPlayers);
     if (validationError) {
       socket.emit("errorMessage", validationError);
       return;
@@ -68,9 +70,10 @@ io.on("connection", (socket) => {
       maxPlayers,
       number_of_decks,
       max_round_cards,
+      min_round_cards,
       trump_rotation: ["Spades", "Diamonds", "Clubs", "Hearts"],
       current_round: 1,
-      cards_this_round: 1, // Start with 1 card
+      cards_this_round: min_round_cards, // Start with configured minimum
       turn_index: 0,
       state: GAME_STATES.WAITING,
       ascending: true, // Track if we're in ascending or descending phase
@@ -84,6 +87,7 @@ io.on("connection", (socket) => {
       gameConfig: {
         decks: number_of_decks,
         maxCards: max_round_cards,
+        minCards: min_round_cards,
         maxPlayers: maxPlayers
       }
     };
@@ -416,7 +420,7 @@ io.on("connection", (socket) => {
         room.cards_this_round--;
       }
     } else {
-      if (room.cards_this_round > 1) {
+      if (room.cards_this_round > room.min_round_cards) {
         room.cards_this_round--;
       } else {
         // Game over
@@ -433,7 +437,7 @@ io.on("connection", (socket) => {
         // Reset room state for a fresh game and auto-restart after a short delay
         room.state = GAME_STATES.WAITING;
         room.current_round = 1;
-        room.cards_this_round = 1;
+        room.cards_this_round = room.min_round_cards;
         room.turn_index = 0;
         room.ascending = true;
         // Reset scores for new game

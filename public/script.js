@@ -3,6 +3,7 @@ const playerNameInput = document.getElementById("playerName");
 const roomCodeInput = document.getElementById("roomCode");
 const deckCountSelect = document.getElementById("deckCount");
 const maxRoundCardsSelect = document.getElementById("maxRoundCards");
+const minRoundCardsSelect = document.getElementById("minRoundCards");
 const createRoomBtn = document.getElementById("createRoomBtn");
 const joinRoomBtn = document.getElementById("joinRoomBtn");
 const startGameBtn = document.getElementById("startGameBtn");
@@ -135,10 +136,20 @@ createRoomBtn.onclick = () => {
 
   const number_of_decks = parseInt(deckCountSelect.value);
   const max_round_cards = parseInt(maxRoundCardsSelect.value);
+  const min_round_cards = parseInt(minRoundCardsSelect.value);
 
   // Validate the game configuration
   const maxPossibleCards = number_of_decks * 52;
   const maxPlayersAllowed = Math.floor(maxPossibleCards / max_round_cards);
+  
+  if (min_round_cards < 1) {
+    alert("Minimum cards per round must be at least 1.");
+    return;
+  }
+  if (min_round_cards > max_round_cards) {
+    alert("Minimum cards per round cannot exceed maximum cards per round.");
+    return;
+  }
   
   if (maxPlayersAllowed < 2) {
     alert("Invalid configuration: Not enough cards for minimum 2 players. Please adjust deck count or max cards per round.");
@@ -150,7 +161,8 @@ createRoomBtn.onclick = () => {
     playerName,
     maxPlayers: Math.min(10, maxPlayersAllowed),
     number_of_decks,
-    max_round_cards
+    max_round_cards,
+    min_round_cards
   });
 };
 
@@ -201,7 +213,8 @@ socket.on("playerList", (data) => {
   if (config) {
     gameConfigDiv.innerHTML = `
       <p>🎴 Number of Decks: ${config.decks}</p>
-      <p>📊 Max Cards per Round: ${config.maxCards}</p>
+      <p>🔽 Min Cards per Round: ${config.minCards}</p>
+      <p>🔼 Max Cards per Round: ${config.maxCards}</p>
       <p>👥 Maximum Players: ${config.maxPlayers}</p>
     `;
   }

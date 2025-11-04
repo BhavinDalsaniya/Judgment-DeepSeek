@@ -344,21 +344,22 @@ io.on("connection", (socket) => {
       const currentIsTrump = (currentCard.card.suit === trumpSuit);
 
       if (currentIsTrump && !isTrump) {
-        // Current card is trump, winning card is not
         winningCard = currentCard;
         winningValue = currentValue;
         isTrump = true;
       } else if (currentIsTrump && isTrump) {
-        // Both are trump, compare values
         if (currentValue > winningValue) {
           winningCard = currentCard;
           winningValue = currentValue;
+        } else if (currentValue === winningValue) {
+          winningCard = currentCard;
         }
       } else if (!currentIsTrump && !isTrump && currentCard.card.suit === leadSuit) {
-        // Both follow suit, compare values
         if (currentValue > winningValue) {
           winningCard = currentCard;
           winningValue = currentValue;
+        } else if (currentValue === winningValue) {
+          winningCard = currentCard;
         }
       }
       // If card doesn't follow suit and isn't trump, it can't win

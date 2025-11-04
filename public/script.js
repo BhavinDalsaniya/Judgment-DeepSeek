@@ -69,6 +69,11 @@ function refreshTurnHighlight() {
 function appendRoundRow(round, currentTotals) {
   const body = document.getElementById("scoreBody");
   if (!body) return;
+  // Ensure header exists before appending rows
+  const header = document.getElementById("scoreHeader");
+  if (header && header.innerHTML.trim() === "") {
+    renderScoreHeader();
+  }
   // Ensure player order exists; if not, infer from totals keys
   if (!playersInRoom || playersInRoom.length === 0) {
     playersInRoom = Object.keys(currentTotals);
@@ -219,6 +224,12 @@ socket.on("playerList", (data) => {
     `;
   }
 
+  // Ensure scoreboard header and totals are initialized/refreshed
+  try {
+    renderScoreHeader();
+    updateScoreTotals(previousTotals || {});
+  } catch (_) {}
+
   // Show start button only if there are at least 2 players
   startGameBtn.classList.toggle("hidden", players.length < 2);
 });
@@ -233,6 +244,9 @@ socket.on("roundStart", ({ round, trump, cardsThisRound, ascending }) => {
   renderRoundHeader();
   // Reset scoreboard for a fresh game at round 1
   resetScoreboardIfNeeded(round);
+  // Ensure scoreboard header and totals are present after view switch
+  renderScoreHeader();
+  updateScoreTotals(previousTotals || {});
   
   // Clear any previous game state
   latestPredictions = {}; // prepare live predictions map for this round
@@ -487,6 +501,10 @@ socket.on("roundEnd", ({ predictions, tricksWon, scores }) => {
   document.getElementById("gameMessages").innerHTML = resultsHTML;
 
   // Update scoreboard: totals header and per-round row
+  const headerEl = document.getElementById("scoreHeader");
+  if (headerEl && headerEl.innerHTML.trim() === "") {
+    renderScoreHeader();
+  }
   appendRoundRow(currentRound, scores);
   updateScoreTotals(scores);
   previousTotals = { ...scores };

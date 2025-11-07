@@ -215,14 +215,32 @@ button:active {
   }
 }
 
+
+
+
 .played-card {
+  display: inline-flex; /* Makes width adjust to content */
+  align-items: center;  /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  padding: 12px;
   margin: 6px;
   border-radius: 8px;
   border-left: 4px solid #ffb703;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  /* padding: 6px 10px; Minimal padding for breathing space */
 }
+
+
+
+
+/* .played-card { */
+  /* background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%); */
+  /* padding: 12px; */
+  /* margin: 6px;
+  border-radius: 8px;
+  border-left: 4px solid #ffb703; */
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); */
+/* } */
 
 /* Horizontal card face for current trick */
 .card-face-inline {

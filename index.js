@@ -131,6 +131,10 @@ io.on("connection", (socket) => {
       return socket.emit("errorMessage", "Room is full");
     }
 
+    if (room.players.find(p => p.name === playerName)) {
+      return socket.emit("errorMessage", "Player name already taken");
+    }
+
     room.players.push({ id: socket.id, name: playerName });
     socket.join(roomCode);
     
